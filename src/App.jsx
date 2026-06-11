@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://oecxytsvwtetuwtolrhs.supabase.co";
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lY3h5dHN2d3RldHV3dG9scmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDUxMjUsImV4cCI6MjA5NjYyMTEyNX0.azs6Gx2v9xrAVazznFOBcl2fkHfMHXhXocedeFjmw8w";
+const SUPABASE_URL = "https://oecxytsvwtetuwtolrhs.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lY3h5dHN2d3RldHV3dG9scmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNDUxMjUsImV4cCI6MjA5NjYyMTEyNX0.azs6Gx2v9xrAVazznFOBcl2fkHfMHXhXocedeFjmw8w";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SESSION_ID = "muzeum-demo";
@@ -43,15 +43,13 @@ async function dbAdmit(id) {
 async function dbAddDemo() {
   const names = ["Anna K.", "Marek W.", "Julia P.", "Tomasz B.", "Katarzyna M."];
   for (const name of names) {
-    const { error } = await supabase.from("queue_entries").insert({ session_id: SESSION_ID, name, status: "waiting" });
-    if (error) throw error;
+    await supabase.from("queue_entries").insert({ session_id: SESSION_ID, name, status: "waiting" });
     await new Promise(r => setTimeout(r, 120));
   }
 }
 
 async function dbClear() {
-  const { error } = await supabase.from("queue_entries").delete().eq("session_id", SESSION_ID);
-  if (error) throw error;
+  await supabase.from("queue_entries").delete().eq("session_id", SESSION_ID);
 }
 
 // ─── CountdownRing ────────────────────────────────────────────
@@ -90,13 +88,8 @@ function GuestView({ onBack, queue, myEntryId, onJoin }) {
 
   const handleScan = async () => {
     setScanning(true);
-    try {
-      await onJoin();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setScanning(false);
-    }
+    try { await onJoin(); } catch(e) { console.error(e); }
+    setScanning(false);
   };
 
   return (
@@ -324,17 +317,19 @@ function LandingScreen({ onGuest, onManager }) {
 
 // ─── Root App ─────────────────────────────────────────────────
 export default function App() {
-  const [screen, setScreen]     = useState("landing");
+  const [screen, setScreen] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.has("guest") ? "guest" : "landing";
+    } catch { return "landing"; }
+  });
   const [queue, setQueue]       = useState([]);
   const [myEntryId, setMyEntryId] = useState(() => { try { return sessionStorage.getItem("tq_entry_id") || null; } catch { return null; } });
   const [loading, setLoading]   = useState(true);
-  const [dbError, setDbError]   = useState(null);
   const [notification, setNotif] = useState(null);
   const [mode, setMode]         = useState("hybrid");
   const [countdown, setCountdown] = useState(SLOT_SECONDS);
   const prevFirstId = useRef(null);
-  const queueRef = useRef([]);
-  const admittingRef = useRef(false);
 
   const showNotif = useCallback((msg, color = COLORS.green) => {
     setNotif({ msg, color });
@@ -345,18 +340,12 @@ export default function App() {
     try {
       const q = await dbFetchQueue();
       setQueue(q);
-      setDbError(null);
       setLoading(false);
-    } catch (e) {
+    } catch(e) {
       console.error(e);
-      setDbError("Nie udało się połączyć z bazą danych. Uruchom supabase/schema.sql i sprawdź klucze w .env.");
       setLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    queueRef.current = queue;
-  }, [queue]);
 
   // Initial load + realtime
   useEffect(() => {
@@ -384,17 +373,13 @@ export default function App() {
     const tick = setInterval(() => {
       setCountdown(c => {
         if (c <= 1) {
-          const first = queueRef.current[0];
-          if (first && !admittingRef.current) {
-            admittingRef.current = true;
-            dbAdmit(first.id)
-              .then(() => showNotif(`✓ Wpuszczono: ${first.name}`))
-              .catch(e => {
-                console.error(e);
-                showNotif("Błąd automatycznego wpuszczania", COLORS.red);
-              })
-              .finally(() => { admittingRef.current = false; });
-          }
+          setQueue(q => {
+            const first = q[0];
+            if (first) {
+              dbAdmit(first.id).then(() => showNotif(`✓ Wpuszczono: ${first.name}`));
+            }
+            return q;
+          });
           return SLOT_SECONDS;
         }
         return c - 1;
@@ -406,77 +391,46 @@ export default function App() {
   useEffect(() => { setCountdown(SLOT_SECONDS); }, [mode]);
 
   const handleJoin = async () => {
-    try {
-      const entry = await dbJoin();
-      if (entry) {
-        setMyEntryId(entry.id);
-        try { sessionStorage.setItem("tq_entry_id", entry.id); } catch {}
-        showNotif("Dołączono do kolejki");
-      }
-    } catch (e) {
-      console.error(e);
-      showNotif("Nie udało się dołączyć do kolejki", COLORS.red);
-      throw e;
+    const entry = await dbJoin();
+    if (entry) {
+      setMyEntryId(entry.id);
+      try { sessionStorage.setItem("tq_entry_id", entry.id); } catch {}
     }
   };
 
   const handleAdmit = async (id) => {
-    try {
-      await dbAdmit(id);
-      showNotif("✓ Wpuszczono gościa");
-      setCountdown(SLOT_SECONDS);
-      if (myEntryId === id) {
-        setMyEntryId(null);
-        try { sessionStorage.removeItem("tq_entry_id"); } catch {}
-      }
-    } catch (e) {
-      console.error(e);
-      showNotif("Błąd wpuszczania gościa", COLORS.red);
+    await dbAdmit(id);
+    showNotif("✓ Wpuszczono gościa");
+    setCountdown(SLOT_SECONDS);
+    if (myEntryId === id) {
+      setMyEntryId(null);
+      try { sessionStorage.removeItem("tq_entry_id"); } catch {}
     }
   };
 
   const handleAddDemo = async () => {
     showNotif("Dodawanie gości…", COLORS.accent);
-    try {
-      await dbAddDemo();
-      showNotif("Dodano gości demo");
-    } catch (e) {
-      console.error(e);
-      showNotif("Błąd dodawania gości", COLORS.red);
-    }
+    await dbAddDemo();
   };
 
   const handleClear = async () => {
-    try {
-      await dbClear();
-      showNotif("Kolejka wyczyszczona", COLORS.orange);
-      setMyEntryId(null);
-      try { sessionStorage.removeItem("tq_entry_id"); } catch {}
-    } catch (e) {
-      console.error(e);
-      showNotif("Błąd czyszczenia kolejki", COLORS.red);
-    }
+    await dbClear();
+    showNotif("Kolejka wyczyszczona", COLORS.orange);
+    setMyEntryId(null);
+    try { sessionStorage.removeItem("tq_entry_id"); } catch {}
   };
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: COLORS.bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"/>
       <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 24 }}>TheQueue</div>
       <div style={{ color: COLORS.textMuted, fontSize: 13 }}>Łączenie z bazą danych…</div>
     </div>
   );
 
-  if (dbError) return (
-    <div style={{ minHeight: "100vh", background: COLORS.bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16, padding: 24, textAlign: "center" }}>
-      <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 24 }}>TheQueue</div>
-      <div style={{ color: COLORS.red, fontSize: 14, maxWidth: 360, lineHeight: 1.6 }}>{dbError}</div>
-      <button onClick={() => { setLoading(true); setDbError(null); loadQueue(); }} style={{ background: COLORS.accent, color: "#0f0f0f", border: "none", borderRadius: 10, padding: "12px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Playfair Display', serif" }}>
-        Spróbuj ponownie
-      </button>
-    </div>
-  );
-
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", position: "relative" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"/>
       {notification && (
         <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", background: notification.color, color: "#fff", borderRadius: 12, padding: "12px 20px", fontSize: 14, fontWeight: 600, boxShadow: "0 4px 20px rgba(0,0,0,0.3)", zIndex: 1000, animation: "slideDown 0.3s ease", whiteSpace: "nowrap" }}>
           {notification.msg}
