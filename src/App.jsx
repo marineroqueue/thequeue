@@ -327,7 +327,7 @@ export default function App() {
   const [myEntryId, setMyEntryId] = useState(() => { try { return sessionStorage.getItem("tq_entry_id") || null; } catch { return null; } });
   const [loading, setLoading]   = useState(true);
   const [notification, setNotif] = useState(null);
-  const [mode, setMode]         = useState("hybrid");
+  const [mode, setMode]         = useState("manual");
   const [countdown, setCountdown] = useState(SLOT_SECONDS);
   const prevFirstId = useRef(null);
 
