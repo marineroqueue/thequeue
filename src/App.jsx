@@ -79,7 +79,7 @@ function CountdownRing({ seconds, total, mode }) {
 }
 
 // ─── GuestView ────────────────────────────────────────────────
-function GuestView({ onBack, queue, myEntryId, onJoin }) {
+function GuestView({ onBack, queue, myEntryId, onJoin, isDirectGuest = false }) {
   const [scanning, setScanning] = useState(false);
   const my = queue.find(e => e.id === myEntryId);
   const ahead = my ? my.position - 1 : 0;
@@ -95,7 +95,9 @@ function GuestView({ onBack, queue, myEntryId, onJoin }) {
   return (
     <div style={{ minHeight: "100vh", background: COLORS.bg, display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: 40 }}>
       <div style={{ width: "100%", maxWidth: 420, display: "flex", alignItems: "center", padding: "20px 24px 0", gap: 12 }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", color: COLORS.textMuted, cursor: "pointer", fontSize: 22, padding: 0 }}>←</button>
+        {!isDirectGuest && (
+          <button onClick={onBack} style={{ background: "none", border: "none", color: COLORS.textMuted, cursor: "pointer", fontSize: 22, padding: 0 }}>←</button>
+        )}
         <div>
           <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 11, letterSpacing: 3, textTransform: "uppercase" }}>Muzeum Narodowe</div>
           <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 18 }}>TheQueue</div>
@@ -437,7 +439,7 @@ export default function App() {
         </div>
       )}
       {screen === "landing"  && <LandingScreen onGuest={() => setScreen("guest")} onManager={() => setScreen("manager")} />}
-      {screen === "guest"    && <GuestView onBack={() => setScreen("landing")} queue={queue} myEntryId={myEntryId} onJoin={handleJoin} />}
+      {screen === "guest"    && <GuestView onBack={() => setScreen("landing")} queue={queue} myEntryId={myEntryId} onJoin={handleJoin} isDirectGuest={new URLSearchParams(window.location.search).has("guest")} />}
       {screen === "manager"  && <ManagerView onBack={() => setScreen("landing")} queue={queue} onAdmit={handleAdmit} onAddDemo={handleAddDemo} onClear={handleClear} mode={mode} setMode={setMode} countdown={countdown} />}
       <style>{`@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}*{box-sizing:border-box}`}</style>
     </div>
