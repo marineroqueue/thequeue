@@ -303,7 +303,7 @@ function LandingScreen({ onGuest, onManager }) {
           </div>
           <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 11, letterSpacing: 4, textTransform: "uppercase", marginBottom: 8 }}>Queue Joy</div>
           <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 32, lineHeight: 1.2, marginBottom: 12 }}>Kolejka na<br/>Twoich zasadach</div>
-          <div style={{ color: COLORS.textMuted, fontSize: 15, lineHeight: 1.7, maxWidth: 300, margin: "0 auto" }}>Daj swoim gościom wolność — niech czekają na swoich zasadach.</div>
+          <div style={{ color: COLORS.textMuted, fontSize: 15, lineHeight: 1.7, maxWidth: 300, margin: "0 auto" }}>Zamień czas oczekiwania w dodatkową sprzedaż.</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
           <button onClick={onGuest} style={{ background: COLORS.accent, color: "#0f0f0f", border: "none", borderRadius: 14, padding: "18px 24px", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: 700, cursor: "pointer" }}>👤 Widok gościa</button>
