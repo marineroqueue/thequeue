@@ -99,8 +99,8 @@ function GuestView({ onBack, queue, myEntryId, onJoin, isDirectGuest = false }) 
           <button onClick={onBack} style={{ background: "none", border: "none", color: COLORS.textMuted, cursor: "pointer", fontSize: 22, padding: 0 }}>←</button>
         )}
         <div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 11, letterSpacing: 3, textTransform: "uppercase" }}>Muzeum Narodowe</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 18 }}>TheQueue</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 11, letterSpacing: 3, textTransform: "uppercase" }}>Twoja Marka</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 18 }}>Queue Joy</div>
         </div>
       </div>
 
@@ -221,7 +221,7 @@ function ManagerView({ onBack, queue, onAdmit, onAddDemo, onClear, mode, setMode
         <button onClick={onBack} style={{ background: "none", border: "none", color: COLORS.textMuted, cursor: "pointer", fontSize: 22, padding: 0 }}>←</button>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 11, letterSpacing: 3, textTransform: "uppercase" }}>Panel zarządzania</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 18 }}>TheQueue · Live</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 18 }}>Queue Joy · Live</div>
         </div>
         <div style={{ width: 8, height: 8, borderRadius: "50%", background: COLORS.green, boxShadow: `0 0 8px ${COLORS.green}` }} />
       </div>
@@ -301,9 +301,9 @@ function LandingScreen({ onGuest, onManager }) {
               <circle cx="16" cy="16" r="3" fill={COLORS.bg}/>
             </svg>
           </div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 11, letterSpacing: 4, textTransform: "uppercase", marginBottom: 8 }}>TheQueue</div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 32, lineHeight: 1.2, marginBottom: 12 }}>Kolejka,<br/>która nie stoi</div>
-          <div style={{ color: COLORS.textMuted, fontSize: 15, lineHeight: 1.7, maxWidth: 300, margin: "0 auto" }}>Wirtualny system zarządzania kolejkami dla muzeów i atrakcji kulturalnych.</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 11, letterSpacing: 4, textTransform: "uppercase", marginBottom: 8 }}>Queue Joy</div>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.text, fontSize: 32, lineHeight: 1.2, marginBottom: 12 }}>Kolejka na<br/>Twoich zasadach</div>
+          <div style={{ color: COLORS.textMuted, fontSize: 15, lineHeight: 1.7, maxWidth: 300, margin: "0 auto" }}>Daj swoim gościom wolność — niech czekają na swoich zasadach.</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
           <button onClick={onGuest} style={{ background: COLORS.accent, color: "#0f0f0f", border: "none", borderRadius: 14, padding: "18px 24px", fontSize: 16, fontFamily: "'Playfair Display', serif", fontWeight: 700, cursor: "pointer" }}>👤 Widok gościa</button>
@@ -425,7 +425,7 @@ export default function App() {
   if (loading) return (
     <div style={{ minHeight: "100vh", background: COLORS.bg, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"/>
-      <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 24 }}>TheQueue</div>
+      <div style={{ fontFamily: "'Playfair Display', serif", color: COLORS.accent, fontSize: 24 }}>Queue Joy</div>
       <div style={{ color: COLORS.textMuted, fontSize: 13 }}>Łączenie z bazą danych…</div>
     </div>
   );
